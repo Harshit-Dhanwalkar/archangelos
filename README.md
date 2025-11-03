@@ -18,7 +18,8 @@ make run
 
 ### Progress
 
-- [x] Printing boot screen (startup screen).
+- [x] Printing on boot screen (startup screen).
+- [x] Implementated `Global Descriptor Table (GDT)` to manage memory segments.
 
 ## References
 

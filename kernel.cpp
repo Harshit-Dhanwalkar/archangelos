@@ -1,4 +1,5 @@
 #include "types.h"
+#include "gdt.h"
 
 // Global variables for cursor position
 static uint16_t* VideoMemory = (uint16_t*)0xb8000;
@@ -69,7 +70,9 @@ extern "C" {
 
     extern void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         clearScreen();
-        printf("Welcome to ArchAngelOS!");
+        printf("Welcome to ArchAngel_OS!");
+
+        GlobalDescriptorTable gdt;
 
         while(1);
     }
