@@ -1,7 +1,7 @@
 GCCPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore
 LDPARAMS = -melf_i386
 
-objects = loader.o gdt.o kernel.o
+objects = loader.o gdt.o port.o kernel.o
 
 all: mykernel.iso
 
@@ -37,6 +37,8 @@ run: mykernel.iso
 	# qemu-system-i386 -cdrom $< -d cpu_reset
 	# qemu-system-i386 -cdrom $< -boot d -display curses -m 64M
 	qemu-system-i386 -cdrom $< -boot d -m 64M -vga std
+
+.PHONY: clean
 
 clean:
 	rm -f $(objects) mykernel.bin mykernel.iso

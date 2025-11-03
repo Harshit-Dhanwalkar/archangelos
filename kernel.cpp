@@ -70,7 +70,8 @@ extern "C" {
 
     extern void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         clearScreen();
-        printf("Welcome to ArchAngel_OS!");
+        printf("Welcome to ArchAngel_OS!\n");
+        printf("Project is on github.com/Harshit-Dhanwalkar/archangelos");
 
         GlobalDescriptorTable gdt;
 

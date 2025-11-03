@@ -1,3 +1,45 @@
+/*
++--------------------------------------------------------------------------------------------------------------------------------+
+|                                               Global Descriptor Table Entry (8 Bytes)                                          |
++--------------------------------------------------------------------------------------------------------------------------------+
+| Byte 7       | Byte 6             | Byte 5          | Byte 4       | Byte 3       | Byte 2       | Byte 1       | Byte 0       |
++--------------+--------------------+-----------------+--------------+--------------+--------------+--------------+--------------+
+| Base [31-24] | Flags [G,D,L,AVL]  | Access          | Base [23-16] | Base [15-08] | Base [07-00] | Limit [15-08]| Limit [07-00]|
+|              | Limit [19-16]      | (P,DPL,S,E,RW,A)|              |              |              |              |              |
++--------------+--------------------+-----------------+--------------+--------------+--------------+--------------+--------------+
+
++---------------------------------------------------------------------------------------------------------------+
+|                             Global Descriptor Table (GDT) - 8 Byte Segment Descriptor                         |
++---------------------------------------------------------------------------------------------------------------+
+| Byte 7                | Byte 6                | Byte 5                                | Byte 4                |
++-----------------------+-----------------------+---------------------------------------+-----------------------+
+| Base Address [31-24]  | G | D | L | AVL | Lim | Type / Access Byte (P|DPL|S|E|R/W|A)  | Base Address [23-16]  |
+|                       | (Granularity)         |                                       |                       |
++-----------------------+-----------------------+---------------------------------------+-----------------------+
+   7 6 5 4 3 2 1 0         7 6 5 4 3 2 1 0              7 6 5 4 3 2 1 0                     7 6 5 4 3 2 1 0
++-----------------------+-----------------------+---------------------------------------+-----------------------+
+| Byte 3                | Byte 2                | Byte 1                                | Byte 0                |
++-----------------------+-----------------------+---------------------------------------+-----------------------+
+| Base Address [15-08]  | Base Address [07-00]  | Limit [15-08]                         | Limit [07-00]         |
++-----------------------+-----------------------+---------------------------------------+-----------------------+
+   7 6 5 4 3 2 1 0         7 6 5 4 3 2 1 0              7 6 5 4 3 2 1 0                     7 6 5 4 3 2 1 0
+
+- Base Address (32-bit): The starting memory address of the segment. It's split across bytes 2, 3, 4, and 7.
+- Segment Limit (20-bit): The maximum offset within the segment. It's split across bytes 0, 1, and 6 (specifically, bits 0-3 of byte 6).
+- Flags (Byte 6, bits 4-7):
+      + G (Granularity): 0 = byte granularity, 1 = 4KB page granularity.
+      + D/B (Default Operation Size / Big): 0 = 16-bit segment, 1 = 32-bit segment (or 16-bit stack segment for data).
+      + L (Long Mode): 0 = compatibility mode, 1 = 64-bit mode (for 64-bit code segments).
+      + AVL (Available for use by system software): Unused by CPU.
+- Access Byte / Type (Byte 5):
+      + P (Present): 0 = segment not present, 1 = segment present.
+      + DPL (Descriptor Privilege Level): 00 (kernel) - 11 (user).
+      + S (System Segment): 0 = system segment, 1 = code/data segment.
+      + E (Executable): 0 = data segment, 1 = code segment.
+      + C/DC (Conforming / Direction/Conforming): For code segments (C): 0 = non-conforming, 1 = conforming. For data segments (DC): 0 = grows up, 1 = grows down.
+      + R/W (Readable/Writable): For code segments (R): 0 = non-readable, 1 = readable. For data segments (W): 0 = non-writable, 1 = writable.
+      + A (Accessed): Set by CPU when segment is accessed.
+*/
 #include "gdt.h"
 #include "types.h"
 
