@@ -2,15 +2,18 @@
 .set FLAGS, (1<<0 | 1<<1)
 .set CHECKSUM, -(MAGIC + FLAGS)
 
+
 .section multiboot
     .long MAGIC
     .long FLAGS
     .long CHECKSUM
 
+
 .section .text
 .extern kernelMain
 .extern callConstructors
 .global loader
+
 
 loader:
     mov $kernel_stack, %esp
@@ -19,6 +22,7 @@ loader:
     push %ebx
     call kernelMain
 
+
 _stop:
     cli
     hlt
@@ -26,5 +30,5 @@ _stop:
 
 
 .section .bss
-.space (2*1024*1024)
+.space 2*1024*1024; # 2 MiB
 kernel_stack:

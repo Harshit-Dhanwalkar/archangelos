@@ -101,7 +101,8 @@ extern "C" {
 
         PrintfKeyboardEventHandler kbhandler;
         KeyboardDriver keyboard(&interrupts, &kbhandler);
-        MouseDriver mouse(&interrupts);
+        MouseEventHandler mouseHandler;
+        MouseDriver mouse(&interrupts, &mouseHandler);
 
         interrupts.Activate(); // Activation of InterruptManager
 

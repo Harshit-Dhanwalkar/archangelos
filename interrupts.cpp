@@ -66,8 +66,8 @@ InterruptManager::InterruptManager(GlobalDescriptorTable* globalDescriptorTable)
      programmableInterruptControllerMasterDataPort.Write(0x04);
      programmableInterruptControllerSlaveDataPort.Write(0x02);
 
-     programmableInterruptControllerMasterDataPort.Write(0x01);
-     programmableInterruptControllerSlaveDataPort.Write(0x01);
+     programmableInterruptControllerMasterDataPort.Write(0x01); // ICW4: 8086 mode
+     programmableInterruptControllerSlaveDataPort.Write(0x01); // ICW4: 8086 mode
 
      programmableInterruptControllerMasterDataPort.Write(0x00);
      programmableInterruptControllerSlaveDataPort.Write(0x00);

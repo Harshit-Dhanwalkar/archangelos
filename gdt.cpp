@@ -40,7 +40,11 @@
       + R/W (Readable/Writable): For code segments (R): 0 = non-readable, 1 = readable. For data segments (W): 0 = non-writable, 1 = writable.
       + A (Accessed): Set by CPU when segment is accessed.
 */
+
 #include "gdt.h"
+#include "types.h"
+#include "interrupts.h"
+#include "port.h"
 
 
 GlobalDescriptorTable::GlobalDescriptorTable()
@@ -129,10 +133,9 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Base() {
     uint8_t* target = (uint8_t*)this;
 
     uint32_t result = target[7];
-
-    result = (result << 8) | target[4];
-    result = (result << 8) | target[3];
-    result = (result << 8) | target[2];
+    result = (result << 8) + target[4];
+    result = (result << 8) + target[3];
+    result = (result << 8) + target[2];
     return result;
 }
 
