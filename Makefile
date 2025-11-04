@@ -1,7 +1,7 @@
 GCCPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore
 LDPARAMS = -melf_i386
 
-objects = loader.o gdt.o port.o kernel.o
+objects = loader.o gdt.o port.o interrupts.o interruptstubs.o keyboard.o mouse.o kernel.o
 
 all: mykernel.iso
 

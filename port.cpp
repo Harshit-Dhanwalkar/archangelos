@@ -1,5 +1,4 @@
 #include "port.h"
-#include "types.h"
 
 Port::Port(uint16_t portnumber) {
     this->portnumber = portnumber;

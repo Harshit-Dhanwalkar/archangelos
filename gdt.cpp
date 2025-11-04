@@ -41,21 +41,24 @@
       + A (Accessed): Set by CPU when segment is accessed.
 */
 #include "gdt.h"
-#include "types.h"
 
-GlobalDescriptorTable::GlobalDescriptorTable():
-    nullSegmentSelector(0, 0 ,0), // Base, Limit, Flags
-    unusedSegmentSelector(0, 0, 0), // Base, Limit, Flags
-    codeSegmentSelector(0, 64*1024*1024, 0x9A), // Base, Limit, Code Segment Flags (0x9A)
-    dataSegmentSelector(0, 64*1024*1024, 0x92) // Base, Limit, Data Segment Flags (0x92)
+
+GlobalDescriptorTable::GlobalDescriptorTable()
+    : nullSegmentSelector(0, 0 ,0), // Base, Limit, Flags
+      unusedSegmentSelector(0, 0, 0), // Base, Limit, Flags
+      codeSegmentSelector(0, 64*1024*1024, 0x9A), // Base, Limit, Code Segment Flags (0x9A)
+      dataSegmentSelector(0, 64*1024*1024, 0x92) // Base, Limit, Data Segment Flags (0x92)
 {
     uint32_t i[2];
-    i[0] = (uint32_t)this; // first byte for address of table itself
-    i[1] = sizeof(GlobalDescriptorTable) << 16; // fisrt 4 bytes are high byte of second integer
+    i[1] = (uint32_t)this; // first byte for address of table itself
+    i[0] = sizeof(GlobalDescriptorTable) << 16; // fisrt 4 bytes are high byte of second integer
+    asm volatile("lgdt (%0)": :"p" (((uint8_t *) i)+2));
 
-    // GDTR structure: [limit (16 bits) | base (32 bits)] (total 6 bytes)
+    /*
+    GDTR structure: [limit (16 bits) | base (32 bits)] (total 6 bytes)
     uint16_t size = sizeof(GlobalDescriptorTable) - 1;
     uint32_t address = (uint32_t)this;
+
     // GDTR pointer structure (a temporary stack variable)
     uint8_t gdtr[6];
 
@@ -68,14 +71,14 @@ GlobalDescriptorTable::GlobalDescriptorTable():
     gdtr[3] = (address >> 8) & 0xFF;
     gdtr[4] = (address >> 16) & 0xFF;
     gdtr[5] = (address >> 24) & 0xFF;
- 
+
     // Load the GDTR register
     asm volatile("lgdt (%0)": :"p" (gdtr));
+    */
 
 }
 
 GlobalDescriptorTable::~GlobalDescriptorTable() {
-
 }
 
 uint16_t GlobalDescriptorTable::DataSegmentSelector() {
@@ -86,9 +89,9 @@ uint16_t GlobalDescriptorTable::CodeSegmentSelector() {
     return (uint8_t*)&codeSegmentSelector - (uint8_t*)this;
 }
 
-GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint32_t limit, uint8_t flags) {
+GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint32_t limit, uint8_t type) {
+
     uint8_t* target = (uint8_t*)this;
-    target[6] = 0xC0; // Set D/B (32-bit default) and G (4K granularity)
 
     // Handle 16-bit vs 32-bit size and granularity
     if (limit <= 65536) {
@@ -103,7 +106,7 @@ GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint3
         else {
             limit = limit >> 12;
         }
-        target[6] = 0xC0;
+    target[6] = 0xC0; // Set D/B (32-bit default) and G (4K granularity)
     }
 
     // Set limit bytes
@@ -118,11 +121,13 @@ GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint3
     target[7] = (base >> 24) & 0xFF;
 
     // Set type/access flags
-    target[5] = flags;
+    target[5] = type;
 }
 
 uint32_t GlobalDescriptorTable::SegmentDescriptor::Base() {
+
     uint8_t* target = (uint8_t*)this;
+
     uint32_t result = target[7];
 
     result = (result << 8) | target[4];
@@ -132,12 +137,16 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Base() {
 }
 
 uint32_t GlobalDescriptorTable::SegmentDescriptor::Limit() {
-    uint8_t* target = (uint8_t*)this;
-    uint32_t result = target[0] | ((target[1] << 8) | ((target[6] & 0xF) << 16));
 
-    if ((target[6] & 0xC0) == 0xC0) {
+    uint8_t* target = (uint8_t*)this;
+
+    uint32_t result = target[6] & 0xF;
+    result = (result << 8) + target[1];
+    result = (result << 8) + target[0];
+
+    if((target[6] & 0xC0) == 0xC0)
         result = (result << 12) | 0xFFF;
-    }
 
     return result;
 }
+

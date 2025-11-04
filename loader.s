@@ -14,11 +14,9 @@
 
 loader:
     mov $kernel_stack, %esp
-
     call callConstructors
-
-    pushl %eax
-    pushl %ebx
+    push %eax
+    push %ebx
     call kernelMain
 
 _stop:

@@ -1,5 +1,8 @@
 #include "types.h"
 #include "gdt.h"
+#include "interrupts.h"
+#include "keyboard.h"
+#include "mouse.h"
 
 // Global variables for cursor position
 static uint16_t* VideoMemory = (uint16_t*)0xb8000;
@@ -17,7 +20,7 @@ void clearScreen(){
     y = 0;
 }
 
-void printf(const char* str){
+extern "C" void printf(const char* str){
     for (int i = 0; str[i] != '\0' ; ++i) {
         char character = str[i];
 
@@ -57,6 +60,26 @@ void printf(const char* str){
     }
 }
 
+void printfHex(uint8_t key) {
+    const char* hex = "0123456789ABCDEF";
+    char foo[] = "00 ";
+    foo[0] = hex[(key >> 4) & 0x0F];
+    foo[1] = hex[key & 0x0F];
+    printf(foo);
+}
+
+
+class PrintfKeyboardEventHandler : public KeyboardEventHandler
+{
+public:
+    void OnKeyDown(const char c)
+    {
+        char foo[] = " ";
+        foo[0] = c;
+        printf(foo);
+    }
+};
+
 typedef void (*constructor)();
 
 extern "C" {
@@ -68,12 +91,19 @@ extern "C" {
             (*i)();
     }
 
-    extern void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
+    extern void kernelMain(void* multiboot_structure, uint32_t /*magicnumber */) {
         clearScreen();
         printf("Welcome to ArchAngel_OS!\n");
         printf("Project is on github.com/Harshit-Dhanwalkar/archangelos");
 
         GlobalDescriptorTable gdt;
+        InterruptManager interrupts(&gdt); // Instnaciation of InterruptManager
+
+        PrintfKeyboardEventHandler kbhandler;
+        KeyboardDriver keyboard(&interrupts, &kbhandler);
+        MouseDriver mouse(&interrupts);
+
+        interrupts.Activate(); // Activation of InterruptManager
 
         while(1);
     }
